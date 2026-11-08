@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="A simple, single-file MITRE ATT&CK coverage checklist.">
+<title>ATT&CK Coverage Checklist</title>
+<style>
+  :root {
+    --paper: #f6f7f8;
+    --white: #ffffff;
+    --ink: #25303a;
+    --muted: #68747e;
+    --line: #dde1e4;
+    --line-dark: #c8cdd1;
+    --red: #b14245;
+    --green: #276949;
+    --green-bg: #eef6f0;
+    --focus: #1b74bc;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; font-size: 14px; }
+  button, input, select { font: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .site-header { background: var(--white); border-bottom: 1px solid var(--line); }
+  .header-inner { max-width: 1850px; margin: auto; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+  .brand { display: flex; align-items: center; gap: 11px; color: #1d252c; text-decoration: none; letter-spacing: -.03em; font-weight: 750; font-size: 19px; }
+  .brand-mark { width: 8px; height: 22px; background: var(--red); display: block; }
+  .header-note { color: var(--muted); font-size: 12px; letter-spacing: .02em; }
+  main { max-width: 1850px; margin: 0 auto; padding: 30px 28px 44px; }
+  .page-top { display: flex; justify-content: space-between; gap: 28px; align-items: flex-start; margin-bottom: 26px; }
+  h1 { margin: 0 0 9px; font-size: clamp(23px, 2.2vw, 30px); letter-spacing: -.035em; font-weight: 680; }
+  .intro { margin: 0; color: #5c6973; font-size: 14px; line-height: 1.55; max-width: 640px; }
+  .progress-summary { min-width: 218px; padding-top: 2px; }
+  .numbers { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; gap: 16px; }
+  .numbers strong { font-size: 23px; font-weight: 680; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+  .numbers span { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .progress-track { width: 100%; background: #e0e4e7; height: 5px; border-radius: 5px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: #488565; transition: width 180ms ease-out; }
+  .toolbar { background: var(--white); border: 1px solid var(--line); border-bottom: 0; padding: 13px 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .search-box { flex: 1 1 250px; max-width: 360px; }
+  .search-box input { display:block; width: 100%; padding: 9px 11px; border: 1px solid var(--line-dark); border-radius: 4px; background: var(--white); color: var(--ink); outline-offset: 1px; }
+  .search-box input::placeholder { color: #879199; }
+  select, .toolbar-button { padding: 9px 10px; border: 1px solid var(--line-dark); border-radius: 4px; background: var(--white); color: #3b4751; }
+  .toolbar-button:hover, select:hover { background: #f6f8f9; }
+  .toolbar-spacer { flex: 1 1 auto; }
+  .toolbar-info { color: #6a7680; font-size: 12px; margin-right: 4px; }
+  .scroll-button { width: 35px; padding: 8px; font-size: 16px; line-height: 18px; }
+  .matrix-shell { background: var(--white); border: 1px solid var(--line); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-color: #b6bec4 #eff1f2; }
+  .matrix { display: flex; gap: 0; min-height: 420px; width: max-content; }
+  .tactic-column { width: 222px; flex: 0 0 222px; border-right: 1px solid var(--line); }
+  .tactic-column:last-child { border-right: 0; }
+  .tactic-header { padding: 14px 12px 12px; border-bottom: 1px solid var(--line); height: 94px; display: flex; flex-direction: column; justify-content: space-between; }
+  .tactic-header-top { display:flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+  .tactic-id { color: #8a949b; font-size: 10px; font-weight: 650; letter-spacing: .09em; }
+  .tactic-score { color: #6a7379; font-size: 11px; font-variant-numeric: tabular-nums; }
+  .tactic-title { font-size: 14px; font-weight: 650; line-height: 1.22; letter-spacing: -.01em; margin: 6px 0 0; }
+  .tactic-title button { border: 0; background: none; padding: 0; color: inherit; text-align: left; font-weight: inherit; line-height: inherit; }
+  .tactic-title button:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .techniques { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .technique { border: 1px solid #e2e6e9; border-radius: 3px; background: #fff; min-height: 61px; display: grid; grid-template-columns: 19px minmax(0,1fr); align-items: start; gap: 7px; padding: 10px 9px; }
+  .technique:hover { border-color: #b8c1c8; }
+  .technique.checked { background: var(--green-bg); border-color: #c6dfcc; }
+  .technique input[type=checkbox] { cursor:pointer; accent-color: var(--green); width: 16px; height: 16px; margin: 1px 0 0; }
+  .technique-name { font-size: 12px; font-weight: 600; display: block; text-align: left; line-height: 1.32; color: #28343d; border:0; background:transparent; padding: 0; width: 100%; overflow-wrap: anywhere; }
+  .technique-name:hover { text-decoration: underline; text-underline-offset: 2px; }
+  .technique-id { display: block; font-size: 11px; font-variant-numeric: tabular-nums; color: #8a949c; margin-top: 5px; }
+  .technique.checked .technique-id { color: #5d8c70; }
+  .empty-column { color: #919aa1; font-size: 12px; text-align: center; padding: 26px 4px; }
+  .below { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-top: 14px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+  .below p { margin: 0; }
+  .below a, .panel a { color: #a93c42; text-decoration: none; }
+  .below a:hover, .panel a:hover { text-decoration: underline; }
+  .fineprint { max-width: 720px; }
+  .backdrop { position: fixed; inset: 0; background: rgba(23,34,43,.32); z-index: 9; }
+  .panel { position: fixed; inset: 0 0 0 auto; width: min(450px, 100vw); background: var(--white); border-left: 1px solid var(--line-dark); box-shadow: -14px 0 30px rgba(10,22,32,.10); z-index: 10; display: flex; flex-direction: column; }
+  [hidden] { display: none !important; }
+  .panel-head { display:flex; align-items:center; justify-content:space-between; padding: 20px 23px; border-bottom: 1px solid var(--line); }
+  .eyebrow { text-transform: uppercase; color: var(--muted); letter-spacing:.09em; font-size: 11px; font-weight: 650; }
+  .close-button { width: 33px; height:33px; border: 1px solid var(--line-dark); border-radius: 4px; background: white; color: #505a62; font-size:20px; line-height: 1; }
+  .close-button:hover { background:var(--paper); }
+  .panel-content { padding: 25px 27px 30px; overflow-y:auto; }
+  .panel-id { color: var(--red); font-size:12px; font-weight:700; letter-spacing:.06em; margin:0 0 11px; }
+  .panel h2 { font-size: 25px; letter-spacing: -.035em; line-height: 1.2; font-weight: 660; margin: 0 0 14px; }
+  .panel-subtitle { margin: 0 0 24px; color: var(--muted); font-size: 12px; }
+  .panel-section { margin: 22px 0; }
+  .panel-section h3 { margin: 0 0 9px; font-size:12px; text-transform: uppercase; letter-spacing:.07em; color:#6f7a82; font-weight:680; }
+  .panel-section p { margin: 0; font-size:14px; line-height: 1.63; }
+  .coverage-toggle { display:flex; gap:11px; align-items:flex-start; padding: 13px; border: 1px solid var(--line); border-radius: 4px; background: #f8f9fa; margin: 18px 0 26px; cursor:pointer; }
+  .coverage-toggle input { accent-color:var(--green); width: 17px; height: 17px; margin: 1px 0 0; }
+  .coverage-toggle strong { display:block; font-size:13px; font-weight:640; }
+  .coverage-toggle small { display:block; line-height:1.5; font-size:12px; color:var(--muted); margin-top:3px; }
+  .mitre-link { display:inline-flex; align-items:center; gap:7px; margin-top:9px; font-weight:600; font-size:13px; }
+  .panel-foot { border-top:1px solid var(--line); padding:15px 27px; margin-top:auto; font-size:12px; color:var(--muted); line-height:1.5; }
+  @media (max-width:700px) {
+    .header-inner { padding: 15px 16px; }
+    .header-note { font-size: 11px; }
+    main { padding: 23px 14px 36px; }
+    .page-top { flex-direction:column; gap: 18px; }
+    .progress-summary { width:100%; min-width:unset; }
+    .toolbar { padding: 12px; }
+    .toolbar-spacer { display:none; }
+    .toolbar-info { width: 100%; order:10; }
+    .scroll-button { display:none; }
+    .tactic-column { width: 205px; flex-basis: 205px; }
+    .panel-content { padding:24px 20px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    html { scroll-behavior:auto; }
+    .progress-fill { transition:none; }
+  }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span> ATT&CK <span style="font-weight:400;color:#8a939b">/</span> coverage</div>
+    <div class="header-note">Enterprise &middot; v20.1 &middot; curated set</div>
+  </div>
+</header>
+<main>
+  <section class="page-top" aria-label="Coverage summary">
+    <div>
+      <h1>Coverage matrix</h1>
+      <p class="intro">Check a technique when you've verified detection coverage. Select its name for a brief explanation. Changes save automatically in this browser.</p>
+    </div>
+    <div class="progress-summary">
+      <div class="numbers"><strong id="coverage-number">0 / 109</strong><span id="coverage-percent">0% covered</span></div>
+      <div class="progress-track" role="progressbar" aria-label="Technique coverage" aria-valuemin="0" aria-valuemax="109" aria-valuenow="0" id="coverage-progress"><div class="progress-fill" id="coverage-fill"></div></div>
+    </div>
+  </section>
+  <div class="toolbar" role="search" aria-label="Filter techniques">
+    <label class="search-box"><span class="sr-only">Search techniques</span><input id="search" type="search" placeholder="Search techniques or IDs" autocomplete="off" aria-label="Search techniques or IDs"></label>
+    <select id="filter" aria-label="Coverage filter">
+      <option value="all">All techniques</option>
+      <option value="uncovered">Not covered</option>
+      <option value="covered">Covered</option>
+    </select>
+    <span class="toolbar-spacer"></span>
+    <span class="toolbar-info" id="visible-count">109 techniques</span>
+    <button class="toolbar-button" id="export" type="button" title="Download a coverage CSV">Export CSV</button>
+    <button class="toolbar-button scroll-button" type="button" id="scroll-left" aria-label="Scroll matrix left">&#8592;</button>
+    <button class="toolbar-button scroll-button" type="button" id="scroll-right" aria-label="Scroll matrix right">&#8594;</button>
+  </div>
+  <div class="matrix-shell" id="matrix-shell" tabindex="0" aria-label="MITRE ATT&CK matrix, scroll horizontally to see more tactics">
+    <div class="matrix" id="matrix"></div>
+  </div>
+  <footer class="below">
+    <p class="fineprint">A selected set of 109 Enterprise ATT&CK techniques and sub-techniques, not the full MITRE catalog. Each is shown under one primary tactic. Checkmarks indicate self-assessed coverage, not tested effectiveness.</p>
+    <p>Based on <a href="https://attack.mitre.org/" target="_blank" rel="noopener noreferrer">MITRE ATT&CK&reg;</a> &middot; v20.1 (Nov 2026)</p>
+  </footer>
+</main>
+<div class="backdrop" id="backdrop" hidden></div>
+<aside class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="panel-title" hidden>
+  <div class="panel-head"><span class="eyebrow" id="panel-type">Technique details</span><button class="close-button" type="button" id="close-panel" aria-label="Close details">&times;</button></div>
+  <div class="panel-content">
+    <p class="panel-id" id="panel-id"></p>
+    <h2 id="panel-title"></h2>
+    <p class="panel-subtitle" id="panel-subtitle"></p>
+    <label class="coverage-toggle" id="panel-coverage-row"><input type="checkbox" id="panel-checkbox"><span><strong>Detection covered</strong><small>Mark covered only after confirming you can detect this behavior.</small></span></label>
+    <div class="panel-section"><h3>What it is</h3><p id="panel-description"></p></div>
+    <div class="panel-section"><h3>Signals to review</h3><p id="panel-telemetry"></p></div>
+    <div class="panel-section"><h3>Platforms</h3><p id="panel-platforms"></p></div>
+    <a class="mitre-link" id="panel-link" target="_blank" rel="noopener noreferrer">Read on MITRE ATT&CK &#8599;</a>
+  </div>
+  <div class="panel-foot">Explanations and telemetry suggestions are condensed analyst notes, not official MITRE detection guidance.</div>
+</aside>
+<script id="catalog-data" type="application/json">{"tactics":[{"slug":"reconnaissance","name":"Reconnaissance","id":"TA0043","description":"Gather information to plan a target operation."},{"slug":"resource-development","name":"Resource Development","id":"TA0042","description":"Set up accounts, infrastructure, and capabilities to support an operation."},{"slug":"initial-access","name":"Initial Access","id":"TA0001","description":"Gain entry to an environment."},{"slug":"execution","name":"Execution","id":"TA0002","description":"Run code or commands on a system."},{"slug":"persistence","name":"Persistence","id":"TA0003","description":"Keep a foothold through restarts, reboots, or credential changes."},{"slug":"privilege-escalation","name":"Privilege Escalation","id":"TA0004","description":"Gain greater permissions."},{"slug":"stealth","name":"Stealth","id":"TA0005","description":"Conceal activity and blend into expected behavior."},{"slug":"defense-impairment","name":"Defense Impairment","id":"TA0112","description":"Disrupt or weaken security controls and monitoring."},{"slug":"credential-access","name":"Credential Access","id":"TA0006","description":"Acquire credentials or authentication material."},{"slug":"discovery","name":"Discovery","id":"TA0007","description":"Learn about systems, users, and the environment."},{"slug":"lateral-movement","name":"Lateral Movement","id":"TA0008","description":"Move between resources within an environment."},{"slug":"collection","name":"Collection","id":"TA0009","description":"Gather data of interest."},{"slug":"command-and-control","name":"Command and Control","id":"TA0011","description":"Communicate with compromised resources."},{"slug":"exfiltration","name":"Exfiltration","id":"TA0010","description":"Move data out of the target environment."},{"slug":"impact","name":"Impact","id":"TA0040","description":"Disrupt, modify, or destroy availability or data."}],"techniques":[{"id":"T1595","name":"Active Scanning","tactic":"reconnaissance","platforms":"Network","description":"Probing exposed assets to learn what responds and where weaknesses may exist.","telemetry":"Web access logs, WAF, IDS, connection metadata"},{"id":"T1592","name":"Gather Victim Host Information","tactic":"reconnaissance","platforms":"PRE","description":"Collecting details about hosts, operating systems, or software before an intrusion.","telemetry":"External asset exposure, OSINT, passive DNS"},{"id":"T1590","name":"Gather Victim Network Information","tactic":"reconnaissance","platforms":"PRE","description":"Discovering ranges, domains, and network structure for targeting.","telemetry":"DNS, certificate transparency, perimeter telemetry"},{"id":"T1589","name":"Gather Victim Identity Information","tactic":"reconnaissance","platforms":"PRE","description":"Researching employee identities and account details to tailor access attempts.","telemetry":"Identity exposure monitoring, reported phishing"},{"id":"T1598","name":"Phishing for Information","tactic":"reconnaissance","platforms":"PRE","description":"Social engineering to collect information rather than execute a payload.","telemetry":"Mail gateway, identity reports, phishing submissions"},{"id":"T1596","name":"Search Open Technical Databases","tactic":"reconnaissance","platforms":"PRE","description":"Querying public technical records for usable target information.","telemetry":"External attack surface monitoring, DNS changes"},{"id":"T1593","name":"Search Open Websites/Domains","tactic":"reconnaissance","platforms":"PRE","description":"Using publicly available sites to build target context.","telemetry":"Public exposure review, domain monitoring"},{"id":"T1583","name":"Acquire Infrastructure","tactic":"resource-development","platforms":"PRE","description":"Obtaining domains, servers, or other infrastructure for operations.","telemetry":"Passive DNS, domain age, reputation enrichment"},{"id":"T1584","name":"Compromise Infrastructure","tactic":"resource-development","platforms":"PRE","description":"Hijacking third-party infrastructure to stage an operation.","telemetry":"Threat intelligence, infrastructure reputation"},{"id":"T1587","name":"Develop Capabilities","tactic":"resource-development","platforms":"PRE","description":"Creating malicious tools, payloads, or supporting capabilities.","telemetry":"Threat intelligence, malware intelligence"},{"id":"T1588","name":"Obtain Capabilities","tactic":"resource-development","platforms":"PRE","description":"Acquiring tools and resources from external sources.","telemetry":"Threat intelligence, malware intelligence"},{"id":"T1608","name":"Stage Capabilities","tactic":"resource-development","platforms":"PRE","description":"Placing payloads or infrastructure where targets can later retrieve them.","telemetry":"URL reputation, hosting intelligence, content analysis"},{"id":"T1585","name":"Establish Accounts","tactic":"resource-development","platforms":"PRE","description":"Creating personas or accounts to support adversary activity.","telemetry":"Identity and social intelligence, account age"},{"id":"T1659","name":"Content Injection","tactic":"initial-access","platforms":"Network","description":"Inserting attacker-controlled content into network communications.","telemetry":"Proxy logs, web integrity telemetry, network sensors"},{"id":"T1189","name":"Drive-by Compromise","tactic":"initial-access","platforms":"Windows,Linux,macOS","description":"Compromising a user through a website they visit.","telemetry":"Browser telemetry, web proxy, EDR"},{"id":"T1190","name":"Exploit Public-Facing Application","tactic":"initial-access","platforms":"Windows,Linux,Network","description":"Exploiting an exposed application or service to enter the environment.","telemetry":"WAF, web access logs, EDR, application errors"},{"id":"T1133","name":"External Remote Services","tactic":"initial-access","platforms":"Windows,Linux,Identity Provider","description":"Using externally accessible services such as VPN or remote access to enter.","telemetry":"VPN, authentication logs, identity sign-ins"},{"id":"T1566","name":"Phishing","tactic":"initial-access","platforms":"Office Suite,Windows,Identity Provider","description":"Sending social-engineering messages as an entry vector.","telemetry":"Email gateway, click telemetry, identity activity"},{"id":"T1566.001","name":"Spearphishing Attachment","tactic":"initial-access","platforms":"Office Suite,Windows","description":"Using a malicious attachment to initiate compromise.","telemetry":"Mail attachments, sandbox verdicts, process lineage"},{"id":"T1566.002","name":"Spearphishing Link","tactic":"initial-access","platforms":"Office Suite,Identity Provider","description":"Using a malicious link to direct a target to an attacker-controlled resource.","telemetry":"Email URL clicks, web proxy, sign-in logs"},{"id":"T1195","name":"Supply Chain Compromise","tactic":"initial-access","platforms":"Windows,Linux,macOS","description":"Compromising delivered software or dependencies before they reach a victim.","telemetry":"Code signing, software inventory, package provenance"},{"id":"T1078","name":"Valid Accounts","tactic":"initial-access","platforms":"Windows,Linux,Identity Provider,SaaS","description":"Abusing legitimate credentials to access resources.","telemetry":"Authentication, MFA, session and device context"},{"id":"T1059","name":"Command and Scripting Interpreter","tactic":"execution","platforms":"Windows,Linux,macOS","description":"Executing commands using native interpreters or shells.","telemetry":"Process creation, command lines, shell telemetry"},{"id":"T1059.001","name":"PowerShell","tactic":"execution","platforms":"Windows","description":"Running PowerShell for execution and orchestration.","telemetry":"PowerShell 4104, process lineage, AMSI, EDR"},{"id":"T1059.003","name":"Windows Command Shell","tactic":"execution","platforms":"Windows","description":"Using cmd.exe and related shell behavior for command execution.","telemetry":"Process creation, command line, parent process"},{"id":"T1204","name":"User Execution","tactic":"execution","platforms":"Windows,Linux,macOS","description":"Relying on a user to run a file, link, or other artifact.","telemetry":"File open events, process trees, browser telemetry"},{"id":"T1047","name":"Windows Management Instrumentation","tactic":"execution","platforms":"Windows","description":"Using WMI for local or remote code execution.","telemetry":"WMI activity, process telemetry, remote execution"},{"id":"T1053","name":"Scheduled Task/Job","tactic":"execution","platforms":"Windows,Linux,macOS","description":"Scheduling code to execute at a chosen time or event.","telemetry":"Task registration, cron, process creation"},{"id":"T1106","name":"Native API","tactic":"execution","platforms":"Windows,Linux,macOS","description":"Calling operating-system APIs to perform malicious actions.","telemetry":"EDR API behavior, process and memory telemetry"},{"id":"T1569","name":"System Services","tactic":"execution","platforms":"Windows,Linux","description":"Abusing system service mechanisms to execute code.","telemetry":"Service creation, service configuration, process lineage"},{"id":"T1547","name":"Boot or Logon Autostart Execution","tactic":"persistence","platforms":"Windows,Linux,macOS","description":"Configuring code to start automatically at boot or login.","telemetry":"Registry autoruns, launch agents, EDR"},{"id":"T1547.001","name":"Registry Run Keys / Startup Folder","tactic":"persistence","platforms":"Windows","description":"Placing persistence in common Windows startup locations.","telemetry":"Run key edits, startup files, process lineage"},{"id":"T1543","name":"Create or Modify System Process","tactic":"persistence","platforms":"Windows,Linux,macOS","description":"Registering or changing services and similar long-running processes.","telemetry":"Service configuration, launch daemons, audit logs"},{"id":"T1098","name":"Account Manipulation","tactic":"persistence","platforms":"Windows,Linux,Identity Provider,SaaS","description":"Modifying accounts, permissions, or credentials to preserve access.","telemetry":"Identity audit, privileged role and account changes"},{"id":"T1136","name":"Create Account","tactic":"persistence","platforms":"Windows,Linux,Identity Provider,SaaS","description":"Creating new accounts as an access foothold.","telemetry":"New user events, role assignments, sign-in anomalies"},{"id":"T1505","name":"Server Software Component","tactic":"persistence","platforms":"Windows,Linux,Network","description":"Embedding persistent components into server software.","telemetry":"Web server file changes, modules, application telemetry"},{"id":"T1053.005","name":"Scheduled Task","tactic":"persistence","platforms":"Windows","description":"Persisting by creating or changing a Windows scheduled task.","telemetry":"Task scheduler operational logs, process events"},{"id":"T1548","name":"Abuse Elevation Control Mechanism","tactic":"privilege-escalation","platforms":"Windows,Linux,macOS","description":"Leveraging built-in elevation workflows to gain more privileges.","telemetry":"Privilege use, elevation events, process lineage"},{"id":"T1068","name":"Exploitation for Privilege Escalation","tactic":"privilege-escalation","platforms":"Windows,Linux,macOS","description":"Using vulnerabilities to execute with higher privileges.","telemetry":"EDR exploit telemetry, service crashes, patch state"},{"id":"T1134","name":"Access Token Manipulation","tactic":"privilege-escalation","platforms":"Windows","description":"Changing or reusing access tokens to operate in another security context.","telemetry":"Token privilege events, logon sessions, EDR"},{"id":"T1078.002","name":"Domain Accounts","tactic":"privilege-escalation","platforms":"Windows,Identity Provider","description":"Abusing legitimate domain credentials to access greater privileges.","telemetry":"Directory auth, group membership, privileged logons"},{"id":"T1548.002","name":"Bypass User Account Control","tactic":"privilege-escalation","platforms":"Windows","description":"Circumventing UAC security prompts to run elevated code.","telemetry":"Process ancestry, elevation transitions, EDR"},{"id":"T1611","name":"Escape to Host","tactic":"privilege-escalation","platforms":"Containers","description":"Escaping container isolation to access the underlying host.","telemetry":"Container runtime, kernel audit, host process telemetry"},{"id":"T1055","name":"Process Injection","tactic":"privilege-escalation","platforms":"Windows,Linux,macOS","description":"Running code in another process context to alter execution or access.","telemetry":"Memory and process telemetry, EDR injection signals"},{"id":"T1036","name":"Masquerading","tactic":"stealth","platforms":"Windows,Linux,macOS","description":"Making malicious artifacts appear benign or trusted.","telemetry":"File names, signer identity, process path baselines"},{"id":"T1027","name":"Obfuscated Files or Information","tactic":"stealth","platforms":"Windows,Linux,macOS","description":"Obscuring content to frustrate inspection and analysis.","telemetry":"Script blocks, file entropy, decoding behavior"},{"id":"T1070","name":"Indicator Removal","tactic":"stealth","platforms":"Windows,Linux,macOS","description":"Removing traces of activity to make investigation harder.","telemetry":"File deletion, history changes, audit anomalies"},{"id":"T1140","name":"Deobfuscate/Decode Files or Information","tactic":"stealth","platforms":"Windows,Linux,macOS","description":"Decoding previously concealed content at execution time.","telemetry":"Script and process telemetry, decoded payload behavior"},{"id":"T1574","name":"Hijack Execution Flow","tactic":"stealth","platforms":"Windows,Linux,macOS","description":"Redirecting legitimate execution paths to load attacker code.","telemetry":"Module loads, file path manipulation, EDR"},{"id":"T1218","name":"System Binary Proxy Execution","tactic":"stealth","platforms":"Windows","description":"Using trusted system executables as a proxy for other code.","telemetry":"Signed binary process lineage, command lines"},{"id":"T1696","name":"Anti-Automation Evasion","tactic":"stealth","platforms":"PRE","description":"Evading automated controls such as CAPTCHA or bot detection.","telemetry":"Application bot telemetry, challenge outcomes"},{"id":"T1686","name":"Disable or Modify System Firewall","tactic":"defense-impairment","platforms":"Windows,Network,IaaS","description":"Tampering with firewall configuration to weaken protection.","telemetry":"Firewall rule changes, device configuration audits"},{"id":"T1685","name":"Disable or Modify Tools","tactic":"defense-impairment","platforms":"Windows,Linux,macOS,Identity Provider","description":"Degrading or stopping security tools and monitoring components.","telemetry":"Sensor health, service changes, audit pipeline gaps"},{"id":"T1685.001","name":"Disable or Modify Windows Event Log","tactic":"defense-impairment","platforms":"Windows","description":"Disabling or changing Windows Event Log collection or behavior.","telemetry":"Event-log service changes, agent health, policy edits"},{"id":"T1685.005","name":"Clear Windows Event Logs","tactic":"defense-impairment","platforms":"Windows","description":"Clearing Windows event logs to remove defensive visibility.","telemetry":"Security event 1102, system events, log continuity"},{"id":"T1484","name":"Domain or Tenant Policy Modification","tactic":"defense-impairment","platforms":"Windows,Identity Provider","description":"Changing centralized policy or tenant settings to undermine defenses.","telemetry":"GPO version changes, directory audits, tenant config"},{"id":"T1687","name":"Exploitation for Defense Impairment","tactic":"defense-impairment","platforms":"Windows,Linux,Network","description":"Exploiting defensive infrastructure to weaken its operation.","telemetry":"Security product telemetry, service crashes, patch state"},{"id":"T1689","name":"Downgrade Attack","tactic":"defense-impairment","platforms":"Windows,Linux,Network","description":"Forcing older or less-secure feature versions or modes.","telemetry":"Protocol negotiation, configuration changes, telemetry"},{"id":"T1110","name":"Brute Force","tactic":"credential-access","platforms":"Windows,Linux,Identity Provider","description":"Repeated authentication attempts to gain credentials.","telemetry":"Failed sign-ins, lockouts, per-account attempt rates"},{"id":"T1110.003","name":"Password Spraying","tactic":"credential-access","platforms":"Identity Provider,Windows","description":"Trying a small number of passwords across many accounts.","telemetry":"Identity sign-in distribution, error codes, IP reuse"},{"id":"T1003","name":"OS Credential Dumping","tactic":"credential-access","platforms":"Windows,Linux","description":"Extracting credential material from operating-system stores.","telemetry":"LSASS access, sensitive file reads, EDR"},{"id":"T1003.001","name":"LSASS Memory","tactic":"credential-access","platforms":"Windows","description":"Reading LSASS memory to obtain authentication material.","telemetry":"Process access to lsass.exe, dump files, EDR"},{"id":"T1557","name":"Adversary-in-the-Middle","tactic":"credential-access","platforms":"Windows,Network","description":"Positioning between endpoints to intercept or relay credentials.","telemetry":"Authentication relays, name resolution, network logs"},{"id":"T1555","name":"Credentials from Password Stores","tactic":"credential-access","platforms":"Windows,Linux,macOS","description":"Acquiring credentials from browsers, vaults, and other stores.","telemetry":"Browser store access, vault audit, secret reads"},{"id":"T1528","name":"Steal Application Access Token","tactic":"credential-access","platforms":"SaaS,Identity Provider","description":"Stealing a token used to access an application without a password.","telemetry":"OAuth grants, token use, atypical session properties"},{"id":"T1558","name":"Steal or Forge Kerberos Tickets","tactic":"credential-access","platforms":"Windows","description":"Obtaining or forging Kerberos tickets for unauthorized access.","telemetry":"Kerberos events, service ticket anomalies, DC logs"},{"id":"T1087","name":"Account Discovery","tactic":"discovery","platforms":"Windows,Linux,Identity Provider","description":"Enumerating accounts in a system or identity directory.","telemetry":"Directory queries, user enumeration, command lines"},{"id":"T1069","name":"Permission Groups Discovery","tactic":"discovery","platforms":"Windows,Linux,Identity Provider","description":"Enumerating privileged groups and memberships.","telemetry":"Directory reads, local group queries, audit logs"},{"id":"T1018","name":"Remote System Discovery","tactic":"discovery","platforms":"Windows,Linux,Network","description":"Identifying remote systems within the environment.","telemetry":"Network probes, remote enumeration, process telemetry"},{"id":"T1046","name":"Network Service Discovery","tactic":"discovery","platforms":"Windows,Linux,Network","description":"Scanning for listening services and exposed ports.","telemetry":"East-west flow data, IDS scans, process telemetry"},{"id":"T1082","name":"System Information Discovery","tactic":"discovery","platforms":"Windows,Linux,macOS","description":"Querying host configuration, operating system, and hardware.","telemetry":"Host discovery commands, process telemetry"},{"id":"T1016","name":"System Network Configuration Discovery","tactic":"discovery","platforms":"Windows,Linux,macOS","description":"Enumerating local network settings to plan movement.","telemetry":"ipconfig/ifconfig, network API and process events"},{"id":"T1482","name":"Domain Trust Discovery","tactic":"discovery","platforms":"Windows,Identity Provider","description":"Identifying trust relationships across identity boundaries.","telemetry":"Directory trust enumeration, admin tool activity"},{"id":"T1021","name":"Remote Services","tactic":"lateral-movement","platforms":"Windows,Linux,Network","description":"Using remote management or login protocols to reach other hosts.","telemetry":"Remote logons, network connections, EDR"},{"id":"T1021.001","name":"Remote Desktop Protocol","tactic":"lateral-movement","platforms":"Windows","description":"Using RDP for remote interactive access.","telemetry":"4624 type 10, RDP operational logs, connections"},{"id":"T1021.002","name":"SMB/Windows Admin Shares","tactic":"lateral-movement","platforms":"Windows","description":"Using SMB administrative shares to move across Windows hosts.","telemetry":"5140/5145, SMB connections, service installs"},{"id":"T1072","name":"Software Deployment Tools","tactic":"lateral-movement","platforms":"Windows,Linux","description":"Abusing centralized deployment tooling for remote execution.","telemetry":"Deployment job logs, software management audits"},{"id":"T1550","name":"Use Alternate Authentication Material","tactic":"lateral-movement","platforms":"Windows,Linux,Identity Provider","description":"Using hashes, tickets, or tokens instead of plaintext passwords.","telemetry":"Kerberos and NTLM anomalies, session context"},{"id":"T1210","name":"Exploitation of Remote Services","tactic":"lateral-movement","platforms":"Windows,Linux,Network","description":"Exploiting a service on a remote host for movement.","telemetry":"Vulnerability exposure, network exploits, EDR"},{"id":"T1570","name":"Lateral Tool Transfer","tactic":"lateral-movement","platforms":"Windows,Linux","description":"Copying tools or payloads from one compromised host to another.","telemetry":"SMB file transfers, remote copy, EDR file events"},{"id":"T1005","name":"Data from Local System","tactic":"collection","platforms":"Windows,Linux,macOS","description":"Collecting files and information directly from an endpoint.","telemetry":"Sensitive file reads, process file activity"},{"id":"T1039","name":"Data from Network Shared Drive","tactic":"collection","platforms":"Windows,Linux","description":"Reading information from network shares.","telemetry":"File server audit, SMB access, unusual download volume"},{"id":"T1113","name":"Screen Capture","tactic":"collection","platforms":"Windows,Linux,macOS","description":"Capturing the visible desktop or application screen.","telemetry":"Screen-capture APIs, endpoint telemetry"},{"id":"T1115","name":"Clipboard Data","tactic":"collection","platforms":"Windows,Linux,macOS","description":"Reading user clipboard contents.","telemetry":"Clipboard API access, endpoint behavior"},{"id":"T1114","name":"Email Collection","tactic":"collection","platforms":"Office Suite,SaaS","description":"Accessing email messages for intelligence or data theft.","telemetry":"Mailbox auditing, OAuth scope grants, download events"},{"id":"T1119","name":"Automated Collection","tactic":"collection","platforms":"Windows,Linux,macOS","description":"Using automation to gather data at scale.","telemetry":"High-volume file access, script execution, network usage"},{"id":"T1560","name":"Archive Collected Data","tactic":"collection","platforms":"Windows,Linux,macOS","description":"Packaging collected information before transfer.","telemetry":"Archive tool execution, file creation, compression patterns"},{"id":"T1074","name":"Data Staged","tactic":"collection","platforms":"Windows,Linux,macOS","description":"Moving selected data into a staging area for transfer.","telemetry":"Directory staging, rapid copy, large archive creation"},{"id":"T1071","name":"Application Layer Protocol","tactic":"command-and-control","platforms":"Windows,Linux,Network","description":"Communicating through familiar application protocols such as HTTPS.","telemetry":"Proxy logs, DNS, TLS metadata, connection periodicity"},{"id":"T1071.001","name":"Web Protocols","tactic":"command-and-control","platforms":"Windows,Linux,Network","description":"Using HTTP/S for command and control traffic.","telemetry":"HTTP metadata, proxy destinations, beacon intervals"},{"id":"T1105","name":"Ingress Tool Transfer","tactic":"command-and-control","platforms":"Windows,Linux,macOS","description":"Transferring tools or payloads into a compromised environment.","telemetry":"Downloads, process ancestry, file creation"},{"id":"T1573","name":"Encrypted Channel","tactic":"command-and-control","platforms":"Windows,Linux,Network","description":"Encrypting traffic to conceal command-and-control content.","telemetry":"TLS fingerprints, destination patterns, traffic shape"},{"id":"T1090","name":"Proxy","tactic":"command-and-control","platforms":"Windows,Linux,Network","description":"Routing communication through intermediary hosts or services.","telemetry":"Proxy chains, unusual tunneling, traffic flows"},{"id":"T1568","name":"Dynamic Resolution","tactic":"command-and-control","platforms":"Windows,Linux,Network","description":"Resolving changing infrastructure such as rotating domains or IPs.","telemetry":"DNS entropy, short TTLs, resolver anomalies"},{"id":"T1571","name":"Non-Standard Port","tactic":"command-and-control","platforms":"Windows,Linux,Network","description":"Using ports atypical for the underlying application protocol.","telemetry":"Port/protocol mismatches, network flow metadata"},{"id":"T1041","name":"Exfiltration Over C2 Channel","tactic":"exfiltration","platforms":"Windows,Linux,Network","description":"Sending stolen data through the active command-and-control connection.","telemetry":"Outbound volume, proxy requests, encrypted traffic shape"},{"id":"T1567","name":"Exfiltration Over Web Service","tactic":"exfiltration","platforms":"SaaS,Windows,Linux","description":"Using external web services to move collected information.","telemetry":"SaaS audit, proxy uploads, egress volume"},{"id":"T1567.002","name":"Exfiltration to Cloud Storage","tactic":"exfiltration","platforms":"SaaS,Windows,Linux","description":"Uploading data to cloud file-sharing or storage services.","telemetry":"Cloud app logs, upload volume, DLP, CASB"},{"id":"T1048","name":"Exfiltration Over Alternative Protocol","tactic":"exfiltration","platforms":"Windows,Linux,Network","description":"Moving data over a protocol different from primary C2 traffic.","telemetry":"Unusual egress protocols, firewall flow records"},{"id":"T1030","name":"Data Transfer Size Limits","tactic":"exfiltration","platforms":"Windows,Linux,Network","description":"Sending data in bounded chunks to reduce conspicuous transfers.","telemetry":"Transfer cadence, repetitive small uploads, flow records"},{"id":"T1020","name":"Automated Exfiltration","tactic":"exfiltration","platforms":"Windows,Linux,SaaS","description":"Automating repeated transfer of data out of the environment.","telemetry":"Scheduled uploads, unusual SaaS exports, DLP"},{"id":"T1486","name":"Data Encrypted for Impact","tactic":"impact","platforms":"Windows,Linux,macOS","description":"Encrypting files or resources to interrupt access.","telemetry":"Mass file changes, ransom notes, shadow copy activity"},{"id":"T1490","name":"Inhibit System Recovery","tactic":"impact","platforms":"Windows,Linux","description":"Disabling backups or recovery options to impede restoration.","telemetry":"Backup deletion, vssadmin, restore policy modifications"},{"id":"T1485","name":"Data Destruction","tactic":"impact","platforms":"Windows,Linux,macOS","description":"Destroying data to prevent recovery or disrupt operations.","telemetry":"High-rate deletion, wiping behavior, storage audit"},{"id":"T1498","name":"Network Denial of Service","tactic":"impact","platforms":"Network","description":"Degrading availability by overwhelming network resources.","telemetry":"Network saturation, traffic distribution, IDS"},{"id":"T1499","name":"Endpoint Denial of Service","tactic":"impact","platforms":"Windows,Linux,macOS","description":"Exhausting or crashing endpoint resources to affect availability.","telemetry":"Resource spikes, process crashes, endpoint availability"},{"id":"T1531","name":"Account Access Removal","tactic":"impact","platforms":"Windows,Identity Provider,SaaS","description":"Removing access to accounts by changing or deleting identity state.","telemetry":"Account disables, auth factor changes, role removals"},{"id":"T1565","name":"Data Manipulation","tactic":"impact","platforms":"Windows,Linux,SaaS","description":"Changing data to undermine integrity and trust.","telemetry":"Sensitive file modifications, DB audit, application logs"},{"id":"T1529","name":"System Shutdown/Reboot","tactic":"impact","platforms":"Windows,Linux","description":"Triggering shutdown or reboot to interrupt availability.","telemetry":"Shutdown events, admin commands, service telemetry"}]}</script>
+<script>
+(() => {
+  'use strict';
+  const {tactics, techniques} = JSON.parse(document.getElementById('catalog-data').textContent);
+  const KEY = 'attack-coverage-checklist-v1';
+  const byId = new Map(techniques.map(t => [t.id, t]));
+  const tacticBySlug = new Map(tactics.map(t => [t.slug, t]));
+  const $ = id => document.getElementById(id);
+  let covered = new Set();
+  let selected = null;
+  let previousFocus = null;
+
+  try {
+    const stored = JSON.parse(localStorage.getItem(KEY) || '[]');
+    if (Array.isArray(stored)) covered = new Set(stored.filter(id => byId.has(id)));
+  } catch (error) {
+    // Private browsing or local storage restrictions: this tab still works.
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify([...covered].sort())); }
+    catch (error) { /* Ignore disabled storage. */ }
+  }
+
+  function elem(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text !== undefined) el.textContent = text;
+    return el;
+  }
+
+  function setCoverage(id, value) {
+    if (value) covered.add(id);
+    else covered.delete(id);
+    save();
+    render();
+    if (selected === id) $('panel-checkbox').checked = covered.has(id);
+  }
+
+  function matches(t) {
+    const term = $('search').value.trim().toLowerCase();
+    const mode = $('filter').value;
+    if (mode === 'covered' && !covered.has(t.id)) return false;
+    if (mode === 'uncovered' && covered.has(t.id)) return false;
+    if (!term) return true;
+    const tacticName = tacticBySlug.get(t.tactic).name;
+    return [t.name, t.id, t.description, tacticName, t.platforms].some(s => s.toLowerCase().includes(term));
+  }
+
+  function render() {
+    const total = techniques.length;
+    const n = covered.size;
+    $('coverage-number').textContent = `${n} / ${total}`;
+    $('coverage-percent').textContent = `${Math.round(n / total * 100)}% covered`;
+    $('coverage-fill').style.width = `${n / total * 100}%`;
+    $('coverage-progress').setAttribute('aria-valuemax', total);
+    $('coverage-progress').setAttribute('aria-valuenow', n);
+
+    const filtered = techniques.filter(matches);
+    $('visible-count').textContent = `${filtered.length} shown`;
+    const matrix = $('matrix');
+    const savedScroll = $('matrix-shell').scrollLeft;
+    matrix.replaceChildren();
+
+    for (const tactic of tactics) {
+      const all = techniques.filter(t => t.tactic === tactic.slug);
+      const visible = filtered.filter(t => t.tactic === tactic.slug);
+      const tally = all.filter(t => covered.has(t.id)).length;
+      const column = elem('section', 'tactic-column');
+      column.setAttribute('aria-label', tactic.name);
+      const header = elem('div', 'tactic-header');
+      const headTop = elem('div', 'tactic-header-top');
+      headTop.append(elem('span', 'tactic-id', tactic.id), elem('span', 'tactic-score', `${tally} / ${all.length}`));
+      const heading = elem('h2', 'tactic-title');
+      const titleButton = elem('button', '', tactic.name);
+      titleButton.type = 'button';
+      titleButton.title = tactic.description;
+      titleButton.addEventListener('click', () => openTactic(tactic));
+      heading.append(titleButton);
+      header.append(headTop, heading);
+      column.append(header);
+      const list = elem('div', 'techniques');
+      if (!visible.length) {
+        list.append(elem('p', 'empty-column', 'No matches'));
+      }
+      for (const t of visible) {
+        const card = elem('div', 'technique' + (covered.has(t.id) ? ' checked' : ''));
+        const checkbox = elem('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = covered.has(t.id);
+        checkbox.setAttribute('aria-label', `Coverage for ${t.id} ${t.name}`);
+        checkbox.addEventListener('change', () => setCoverage(t.id, checkbox.checked));
+        const details = elem('div');
+        const button = elem('button', 'technique-name', t.name);
+        button.type = 'button';
+        button.addEventListener('click', () => openTechnique(t));
+        details.append(button, elem('span', 'technique-id', t.id));
+        card.append(checkbox, details);
+        list.append(card);
+      }
+      column.append(list);
+      matrix.append(column);
+    }
+    $('matrix-shell').scrollLeft = savedScroll;
+  }
+
+  function showPanel() {
+    previousFocus = document.activeElement;
+    $('backdrop').hidden = false;
+    $('panel').hidden = false;
+    document.body.style.overflow = 'hidden';
+    $('close-panel').focus();
+  }
+  function closePanel() {
+    if ($('panel').hidden) return;
+    $('backdrop').hidden = true;
+    $('panel').hidden = true;
+    document.body.style.overflow = '';
+    selected = null;
+    if (previousFocus && previousFocus.isConnected) previousFocus.focus();
+  }
+
+  function openTactic(tactic) {
+    selected = null;
+    $('panel-type').textContent = 'Tactic';
+    $('panel-id').textContent = tactic.id;
+    $('panel-title').textContent = tactic.name;
+    const count = techniques.filter(t => t.tactic === tactic.slug).length;
+    $('panel-subtitle').textContent = `${count} techniques in this curated set`;
+    $('panel-coverage-row').hidden = true;
+    $('panel-description').textContent = tactic.description;
+    $('panel-telemetry').textContent = 'Select a technique in this column to see its behavior and suggested sources of evidence.';
+    $('panel-platforms').textContent = 'Enterprise ATT&CK';
+    $('panel-link').href = `https://attack.mitre.org/tactics/${tactic.id}/`;
+    showPanel();
+  }
+
+  function openTechnique(t) {
+    selected = t.id;
+    $('panel-type').textContent = t.id.includes('.') ? 'Sub-technique' : 'Technique';
+    $('panel-id').textContent = t.id;
+    $('panel-title').textContent = t.name;
+    $('panel-subtitle').textContent = tacticBySlug.get(t.tactic).name;
+    $('panel-coverage-row').hidden = false;
+    $('panel-checkbox').checked = covered.has(t.id);
+    $('panel-description').textContent = t.description;
+    $('panel-telemetry').textContent = t.telemetry;
+    $('panel-platforms').textContent = t.platforms.split(',').join(' · ');
+    $('panel-link').href = `https://attack.mitre.org/techniques/${t.id.replace('.', '/')}/`;
+    showPanel();
+  }
+
+  $('panel-checkbox').addEventListener('change', () => {
+    if (selected) setCoverage(selected, $('panel-checkbox').checked);
+  });
+  $('search').addEventListener('input', render);
+  $('filter').addEventListener('change', render);
+  $('close-panel').addEventListener('click', closePanel);
+  $('backdrop').addEventListener('click', closePanel);
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closePanel();
+    if (event.key === 'Tab' && !$('panel').hidden) {
+      const controls = [...$('panel').querySelectorAll('button, input, a[href]')].filter(el => !el.closest('[hidden]'));
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+  });
+  $('scroll-left').addEventListener('click', () => $('matrix-shell').scrollBy({left: -680, behavior:'smooth'}));
+  $('scroll-right').addEventListener('click', () => $('matrix-shell').scrollBy({left: 680, behavior:'smooth'}));
+
+  $('export').addEventListener('click', () => {
+    const csvCell = value => '"' + String(value).replaceAll('"', '""') + '"';
+    const rows = [['Technique ID', 'Technique', 'Tactic', 'Covered']].concat(techniques.map(t => [t.id,t.name,tacticBySlug.get(t.tactic).name, covered.has(t.id) ? 'Yes' : 'No']));
+    const csv = '\ufeff' + rows.map(row => row.map(csvCell).join(',')).join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'attack-coverage.csv';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  render();
+})();
+</script>
+<style>.sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
+</body>
+</html>
